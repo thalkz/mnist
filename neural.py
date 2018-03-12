@@ -23,6 +23,7 @@ def import_data(filepath, app_length) :
 	return data, label, label_vector
 
 def backprop(batch_index) :
+
 	# Feedforeward
 
 	start = batch_index * batch_size
@@ -37,18 +38,33 @@ def backprop(batch_index) :
 	z2 = a1.dot(w2) + b2 
 	a2 = sigmoid(z2)
 
-	# Backprop hidden layer
+	z3 = a2.dot(w3) + b3
+	a3 = sigmoid(z3)
 
-	delta = (a2 - label_batch) * sigmoid_prime(z2)
-	nabla_b2 = delta
-	nabla_w2 = np.dot(a1.T, delta)
+	# Backpropagation
 
-	# Backprop input layer
+	delta = (a3 - label_batch) * sigmoid_prime(z3)
+	nabla_b3 = delta.sum(axis=0) / batch_size
+	nabla_w3 = np.dot(a2.T, delta).T
 
-	nabla_b1 = np.dot(delta, w2.T) * sigmoid_prime(z1)
-	nabla_w1 = np.dot(nabla_b1.T, data_batch)
+	delta = np.dot(delta, w3.T) * sigmoid_prime(z2)
+	nabla_b2 = delta.sum(axis=0) / batch_size
+	nabla_w2 = np.dot(delta.T, a1)
 
-	return nabla_w1, nabla_b1, nabla_w2, nabla_b2
+	delta = np.dot(delta, w2.T) * sigmoid_prime(z1)
+	nabla_b1 = delta.sum(axis=0) / batch_size
+	nabla_w1 = np.dot(delta.T, data_batch)
+
+	# Ajust weights and biases
+
+	w1 -= step_size * nabla_w1
+	b1 -= step_size * nabla_b3
+
+	w2 -= step_size * nabla_w2
+	b2 -= step_size * nabla_b2
+
+	w3 -= step_size * nabla_w3
+	b3 -= step_size * nabla_b3
 
 def sigmoid(x) :
 	return 1 / (1 + np.exp(-x))
@@ -82,10 +98,14 @@ def plot_graph() :
 	plt.ylim((0, 100))
 	plt.show()
 
+def random_matrix(rows, cols) :
+	return 2 * np.random.random((rows, cols)) - 1
+
 ''' Script '''
 
 input_size = 784
-hidden_size = 100
+hidden_1_size = 16
+hidden_2_size = 16
 output_size = 10
 
 backprop_steps = 1000000
@@ -96,24 +116,24 @@ step_size = 0.0005
 
 # Init
 
-learning_rate = []
 data, label, label_vector = import_data("MNIST-data", data_size)
 
-w1 = 2 * np.random.random((input_size, hidden_size)) - 1
-b1 = np.zeros((1, hidden_size))
+w1 = random_matrix(input_size, hidden_1_size)
+b1 = random_matrix(1, hidden_1_size)
 
-w2 = 2 * np.random.random((hidden_size, output_size)) - 1
-b2 = np.zeros((1, output_size))
+w2 = random_matrix(hidden_1_size, hidden_2_size)
+b2 = random_matrix(1, hidden_2_size)
+
+w3 = random_matrix(hidden_2_size, output_size)
+b3 = random_matrix(1, output_size)
+
+learning_rate = []
 
 # Backprop
 
 for i in range(backprop_steps) :
 
-	nabla_w1, nabla_b1, nabla_w2, nabla_b2 = backprop(i % batch_count)
-	w1 -= step_size * nabla_w1.T
-	w2 -= step_size * nabla_w2
-	b1 -= step_size * nabla_b1.sum(axis=0) / batch_size
-	b2 -= step_size * nabla_b2.sum(axis=0) / batch_size
+	backprop(i % batch_count)
 
 	if (i % 1000 == 0) :
 		log_precision(i)
