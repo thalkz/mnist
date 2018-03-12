@@ -95,7 +95,7 @@ def log_precision(i) :
 
 	learning_rate.append(percent)
 
-	print(str(i) + " - " + str(percent) + "% - " + str(round(loss, 5)))
+	print(str(int(i/1000)) + " - " + str(percent) + "% - " + str(round(loss, 5)))
 
 def plot_graph() :
 	plt.plot(learning_rate)
@@ -113,11 +113,11 @@ hidden_1_size = 16
 hidden_2_size = 16
 output_size = 10
 
-backprop_steps = 100000
+backprop_steps = 500000
 data_size = 60000
 batch_count = 400
 batch_size = int(data_size / batch_count)
-step_size = 0.0005
+step_size = 0.0001
 
 # Init
 
