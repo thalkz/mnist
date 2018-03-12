@@ -24,6 +24,8 @@ def import_data(filepath, app_length) :
 
 def backprop(batch_index) :
 
+	global w1, w2, w3, b1, b2, b3
+
 	# Feedforeward
 
 	start = batch_index * batch_size
@@ -45,7 +47,7 @@ def backprop(batch_index) :
 
 	delta = (a3 - label_batch) * sigmoid_prime(z3)
 	nabla_b3 = delta.sum(axis=0) / batch_size
-	nabla_w3 = np.dot(a2.T, delta).T
+	nabla_w3 = np.dot(a2.T, delta)
 
 	delta = np.dot(delta, w3.T) * sigmoid_prime(z2)
 	nabla_b2 = delta.sum(axis=0) / batch_size
@@ -53,12 +55,12 @@ def backprop(batch_index) :
 
 	delta = np.dot(delta, w2.T) * sigmoid_prime(z1)
 	nabla_b1 = delta.sum(axis=0) / batch_size
-	nabla_w1 = np.dot(delta.T, data_batch)
+	nabla_w1 = np.dot(delta.T, data_batch).T
 
 	# Ajust weights and biases
 
 	w1 -= step_size * nabla_w1
-	b1 -= step_size * nabla_b3
+	b1 -= step_size * nabla_b1
 
 	w2 -= step_size * nabla_w2
 	b2 -= step_size * nabla_b2
@@ -79,7 +81,10 @@ def log_precision(i) :
 	z2 = a1.dot(w2) + b2 
 	a2 = sigmoid(z2)
 
-	pred_label = a2
+	z3 = a2.dot(w3) + b3
+	a3 = sigmoid(z3)
+
+	pred_label = a3
 
 	pred_vector = np.argmax(pred_label, axis=1)
 	result = pred_vector - label_vector
@@ -108,7 +113,7 @@ hidden_1_size = 16
 hidden_2_size = 16
 output_size = 10
 
-backprop_steps = 1000000
+backprop_steps = 100000
 data_size = 60000
 batch_count = 400
 batch_size = int(data_size / batch_count)
