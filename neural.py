@@ -98,10 +98,9 @@ def log_precision(i) :
 	print(str(int(i/1000)) + " - " + str(percent) + "% - " + str(round(loss, 5)))
 
 def plot_graph() :
-	plt.plot(learning_rate)
-	plt.ylabel('Learning rate')
-	plt.ylim((0, 100))
-	plt.show()
+    plt.plot(learning_rate, 'C1')
+    plt.draw()
+    plt.pause(0.001)
 
 def random_matrix(rows, cols) :
 	return 2 * np.random.random((rows, cols)) - 1
@@ -113,11 +112,11 @@ hidden_1_size = 16
 hidden_2_size = 16
 output_size = 10
 
-backprop_steps = 500000
+backprop_steps = 1000000
 data_size = 60000
 batch_count = 400
 batch_size = int(data_size / batch_count)
-step_size = 0.0001
+step_size = 0.0002
 
 # Init
 
@@ -136,13 +135,18 @@ learning_rate = []
 
 # Backprop
 
+plt.ion()
+plt.ylabel('Learning rate')
+plt.ylim((0, 100))
+plt.show()
+
 for i in range(backprop_steps) :
 
 	backprop(i % batch_count)
 
 	if (i % 1000 == 0) :
 		log_precision(i)
+		plot_graph()
 
 log_precision(i)
 plot_graph()
-
